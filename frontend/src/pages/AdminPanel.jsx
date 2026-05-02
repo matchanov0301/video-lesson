@@ -11,7 +11,9 @@ export default function AdminPanel() {
   
   // Forms state
   const [newCatName, setNewCatName] = useState("");
-  const [newLesson, setNewLesson] = useState({ title: "", link: "", category_id: "" });
+  const [newLesson, setNewLesson] = useState({ topic: "", speaker: "", duration: "", link: "", category_id: "" });
+  const [sheetId, setSheetId] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     WebApp.BackButton.show();
@@ -66,8 +68,8 @@ export default function AdminPanel() {
 
   const addLesson = async (e) => {
     e.preventDefault();
-    if (!newLesson.title || !newLesson.link || !newLesson.category_id) {
-      WebApp.showAlert("Please fill all fields.");
+    if (!newLesson.topic || !newLesson.link || !newLesson.category_id) {
+      WebApp.showAlert("Please fill required fields (Topic, Link, Category).");
       return;
     }
     if (!newLesson.link.startsWith("https://t.me/")) {
@@ -77,10 +79,30 @@ export default function AdminPanel() {
     
     try {
       await api.post('/lessons', newLesson);
-      setNewLesson({ title: "", link: "", category_id: "" });
+      setNewLesson({ topic: "", speaker: "", duration: "", link: "", category_id: "" });
       WebApp.showAlert("Lesson added successfully!");
     } catch (error) {
       WebApp.showAlert("Error adding lesson.");
+    }
+  };
+
+  const importFromSheets = async (e) => {
+    e.preventDefault();
+    if (!sheetId) {
+      WebApp.showAlert("Please enter a Google Sheet ID.");
+      return;
+    }
+    setIsImporting(true);
+    try {
+      const res = await api.post('/import/sheets', { sheet_id: sheetId });
+      WebApp.showAlert(`Import successful! ${res.data.imported} lessons imported.`);
+      setSheetId("");
+      fetchData(); // Refresh categories
+    } catch (error) {
+      WebApp.showAlert("Error importing from Google Sheets.");
+      console.error(error);
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -116,9 +138,26 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      {/* Google Sheets Import */}
+      <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">Import from Google Sheets</h2>
+        <form onSubmit={importFromSheets} className="space-y-3">
+          <input 
+            type="text" 
+            value={sheetId}
+            onChange={(e) => setSheetId(e.target.value)}
+            placeholder="Google Sheet ID (e.g. 10ByL...)" 
+            className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
+          />
+          <button type="submit" disabled={isImporting} className="w-full bg-tg-button text-tg-buttonText py-2.5 rounded-lg font-medium opacity-100 disabled:opacity-50">
+            {isImporting ? "Importing..." : "Start Import"}
+          </button>
+        </form>
+      </div>
+
       {/* Lessons Management */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">Add Lesson</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">Add Manual Lesson</h2>
         <form onSubmit={addLesson} className="space-y-3">
           <select 
             value={newLesson.category_id}
@@ -133,9 +172,25 @@ export default function AdminPanel() {
           
           <input 
             type="text" 
-            value={newLesson.title}
-            onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
-            placeholder="Lesson Title" 
+            value={newLesson.topic}
+            onChange={(e) => setNewLesson({...newLesson, topic: e.target.value})}
+            placeholder="Topic (Required)" 
+            className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
+          />
+
+          <input 
+            type="text" 
+            value={newLesson.speaker}
+            onChange={(e) => setNewLesson({...newLesson, speaker: e.target.value})}
+            placeholder="Speaker (Optional)" 
+            className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
+          />
+
+          <input 
+            type="text" 
+            value={newLesson.duration}
+            onChange={(e) => setNewLesson({...newLesson, duration: e.target.value})}
+            placeholder="Duration (e.g. 15:30) (Optional)" 
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           
@@ -143,7 +198,7 @@ export default function AdminPanel() {
             type="url" 
             value={newLesson.link}
             onChange={(e) => setNewLesson({...newLesson, link: e.target.value})}
-            placeholder="https://t.me/c/..." 
+            placeholder="https://t.me/c/... (Required)" 
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           

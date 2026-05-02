@@ -1,11 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Body, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Body, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from sqlalchemy import or_
+from typing import List, Dict, Any, Optional
 import os
 import asyncio
+import csv
+import io
+import urllib.request
 
 from . import models, schemas, database, auth
 from .database import engine
@@ -73,8 +77,35 @@ def delete_category(category_id: int, db: Session = Depends(database.get_db), us
     return {"ok": True}
 
 @app.get("/lessons", response_model=List[schemas.Lesson])
-def read_lessons(category_id: int, db: Session = Depends(database.get_db)):
-    lessons = db.query(models.Lesson).filter(models.Lesson.category_id == category_id).all()
+def read_lessons(category_id: Optional[int] = None, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    query = db.query(models.Lesson)
+    if category_id is not None:
+        query = query.filter(models.Lesson.category_id == category_id)
+    lessons = query.all()
+    
+    # Mark favorites
+    favs = db.query(models.Favorite).filter(models.Favorite.user_id == user["id"]).all()
+    fav_ids = {f.lesson_id for f in favs}
+    
+    for l in lessons:
+        l.is_favorite = l.id in fav_ids
+    return lessons
+
+@app.get("/lessons/search", response_model=List[schemas.Lesson])
+def search_lessons(q: str, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    search = f"%{q}%"
+    lessons = db.query(models.Lesson).join(models.Category).filter(
+        or_(
+            models.Lesson.topic.ilike(search),
+            models.Lesson.speaker.ilike(search),
+            models.Category.name.ilike(search)
+        )
+    ).all()
+    
+    favs = db.query(models.Favorite).filter(models.Favorite.user_id == user["id"]).all()
+    fav_ids = {f.lesson_id for f in favs}
+    for l in lessons:
+        l.is_favorite = l.id in fav_ids
     return lessons
 
 @app.post("/lessons", response_model=schemas.Lesson)
@@ -98,18 +129,69 @@ def delete_lesson(lesson_id: int, db: Session = Depends(database.get_db), user: 
     db.commit()
     return {"ok": True}
 
-@app.post("/import")
-def import_data(data: List[Dict[str, Any]] = Body(...), db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+# Favorites
+@app.get("/favorites", response_model=List[schemas.Lesson])
+def get_favorites(db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    user_id = user["id"]
+    favs = db.query(models.Favorite).filter(models.Favorite.user_id == user_id).all()
+    lesson_ids = [f.lesson_id for f in favs]
+    lessons = db.query(models.Lesson).filter(models.Lesson.id.in_(lesson_ids)).all()
+    for l in lessons:
+        l.is_favorite = True
+    return lessons
+
+@app.post("/favorites", response_model=schemas.Favorite)
+def add_favorite(favorite: schemas.FavoriteBase, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    user_id = user["id"]
+    existing = db.query(models.Favorite).filter(models.Favorite.user_id == user_id, models.Favorite.lesson_id == favorite.lesson_id).first()
+    if existing:
+        return existing
+    db_fav = models.Favorite(user_id=user_id, lesson_id=favorite.lesson_id)
+    db.add(db_fav)
+    db.commit()
+    db.refresh(db_fav)
+    return db_fav
+
+@app.delete("/favorites/{lesson_id}")
+def delete_favorite(lesson_id: int, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    user_id = user["id"]
+    fav = db.query(models.Favorite).filter(models.Favorite.user_id == user_id, models.Favorite.lesson_id == lesson_id).first()
+    if fav:
+        db.delete(fav)
+        db.commit()
+    return {"ok": True}
+
+class SheetImportRequest(schemas.BaseModel):
+    sheet_id: str
+
+@app.post("/import/sheets")
+def import_from_sheets(data: SheetImportRequest, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    imported_count = 0
-    for item in data:
-        title = item.get("title")
-        link = item.get("link")
-        cat_name = item.get("category")
+    # Use gviz endpoint for CSV export which is more reliable
+    url = f"https://docs.google.com/spreadsheets/d/{data.sheet_id}/gviz/tq?tqx=out:csv"
+    
+    try:
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req) as response:
+            content = response.read().decode('utf-8')
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch Google Sheet: {e}")
         
-        if not title or not link or not cat_name:
+    reader = csv.DictReader(io.StringIO(content))
+    imported_count = 0
+    
+    for row in reader:
+        # Based on actual CSV output from the provided sheet:
+        # ['Speaker', 'Mavzu', 'Rubrika', 'Topic Mavzu', 'Topic', 'Davomiyligi', 'link']
+        cat_name = row.get("Rubrika", row.get("category", row.get("категория", ""))).strip()
+        speaker = row.get("Speaker", row.get("speaker", row.get("спикер", ""))).strip()
+        topic = row.get("Mavzu", row.get("topic", row.get("тема", ""))).strip()
+        duration = row.get("Davomiyligi", row.get("duration", row.get("длительность", ""))).strip()
+        link = row.get("link", row.get("ссылка", row.get("ссылка на Telegram сообщение", ""))).strip()
+        
+        if not topic or not link or not cat_name:
             continue
             
         # Find or create category
@@ -123,10 +205,11 @@ def import_data(data: List[Dict[str, Any]] = Body(...), db: Session = Depends(da
         # Check if lesson already exists by link
         lesson = db.query(models.Lesson).filter(models.Lesson.link == link).first()
         if not lesson:
-            lesson = models.Lesson(title=title, link=link, category_id=category.id)
+            lesson = models.Lesson(topic=topic, speaker=speaker, duration=duration, link=link, category_id=category.id)
             db.add(lesson)
             db.commit()
             imported_count += 1
+            
     return {"ok": True, "imported": imported_count}
 
 # Mount frontend build directory if it exists

@@ -16,12 +16,21 @@ class Lesson(Base):
     __tablename__ = "lessons"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
+    topic = Column(String, index=True)
+    speaker = Column(String)
+    duration = Column(String)
     link = Column(String)
     category_id = Column(Integer, ForeignKey("categories.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     category = relationship("Category", back_populates="lessons")
+
+class Favorite(Base):
+    __tablename__ = "favorites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
+    lesson_id = Column(Integer, ForeignKey("lessons.id"))
 
 class Admin(Base):
     __tablename__ = "admins"

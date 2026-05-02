@@ -3,7 +3,9 @@ from typing import List, Optional
 from datetime import datetime
 
 class LessonBase(BaseModel):
-    title: str
+    topic: str
+    speaker: Optional[str] = None
+    duration: Optional[str] = None
     link: str
     category_id: int
 
@@ -13,6 +15,17 @@ class LessonCreate(LessonBase):
 class Lesson(LessonBase):
     id: int
     created_at: datetime
+    is_favorite: Optional[bool] = False
+
+    class Config:
+        from_attributes = True
+
+class FavoriteBase(BaseModel):
+    lesson_id: int
+
+class Favorite(FavoriteBase):
+    id: int
+    user_id: int
 
     class Config:
         from_attributes = True
