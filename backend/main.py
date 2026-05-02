@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from typing import List, Dict, Any, Optional
 import os
 import asyncio
@@ -16,6 +16,20 @@ from .database import engine
 from .bot import bot, dp
 
 models.Base.metadata.create_all(bind=engine)
+
+def ensure_bigint_columns_for_postgres():
+    """Prevent Telegram ID overflows on PostgreSQL integer columns."""
+    if engine.dialect.name != "postgresql":
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE favorites ALTER COLUMN user_id TYPE BIGINT"))
+            conn.execute(text("ALTER TABLE admins ALTER COLUMN telegram_id TYPE BIGINT"))
+    except Exception:
+        # Keep startup resilient; create_all already handled table creation.
+        pass
+
+ensure_bigint_columns_for_postgres()
 
 app = FastAPI(title="Video Lessons API")
 
