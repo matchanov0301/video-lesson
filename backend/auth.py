@@ -9,6 +9,7 @@ from . import models, database
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN")
 GROUP_ID = os.getenv("TELEGRAM_GROUP_ID", "-1000000000000")
+SUPER_ADMIN_ID = os.getenv("SUPER_ADMIN_ID")
 
 def validate_init_data(init_data: str, bot_token: str) -> dict:
     try:
@@ -59,7 +60,8 @@ async def get_current_user(
         user_id = user_data.get("id")
         
         # Check if user is admin
-        is_admin = db.query(models.Admin).filter(models.Admin.telegram_id == user_id).first() is not None
+        is_super_admin = str(user_id) == SUPER_ADMIN_ID
+        is_admin = is_super_admin or (db.query(models.Admin).filter(models.Admin.telegram_id == user_id).first() is not None)
         
         # Note: Checking group membership synchronously here is tricky because we need the bot instance.
         # For simplicity in this template, we assume if they have valid initData they might be in the group,
