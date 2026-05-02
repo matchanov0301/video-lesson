@@ -169,8 +169,16 @@ def import_from_sheets(data: SheetImportRequest, db: Session = Depends(database.
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    sheet_id = data.sheet_id
+    if "spreadsheets/d/" in sheet_id:
+        # Extract ID from full URL
+        try:
+            sheet_id = sheet_id.split("spreadsheets/d/")[1].split("/")[0]
+        except IndexError:
+            raise HTTPException(status_code=400, detail="Invalid Google Sheets URL format.")
+            
     # Use gviz endpoint for CSV export which is more reliable
-    url = f"https://docs.google.com/spreadsheets/d/{data.sheet_id}/gviz/tq?tqx=out:csv"
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv"
     
     try:
         req = urllib.request.Request(url)
