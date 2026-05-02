@@ -193,7 +193,7 @@ def import_from_sheets(data: SheetImportRequest, db: Session = Depends(database.
     for row in reader:
         # Based on actual CSV output from the provided sheet:
         # ['Speaker', 'Mavzu', 'Rubrika', 'Topic Mavzu', 'Topic', 'Davomiyligi', 'link']
-        cat_name = row.get("Rubrika", row.get("category", row.get("категория", ""))).strip()
+        cat_name = row.get("Topic Mavzu", row.get("category", row.get("категория", ""))).strip()
         speaker = row.get("Speaker", row.get("speaker", row.get("спикер", ""))).strip()
         topic = row.get("Mavzu", row.get("topic", row.get("тема", ""))).strip()
         duration = row.get("Davomiyligi", row.get("duration", row.get("длительность", ""))).strip()
