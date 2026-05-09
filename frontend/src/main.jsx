@@ -42,12 +42,20 @@ class ErrorBoundary extends React.Component {
 
 WebApp.ready()
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <I18nextProvider i18n={i18n}>
-        <App />
-      </I18nextProvider>
-    </ErrorBoundary>
-  </React.StrictMode>,
-)
+const renderApp = () => {
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <I18nextProvider i18n={i18n}>
+          <App />
+        </I18nextProvider>
+      </ErrorBoundary>
+    </React.StrictMode>,
+  );
+};
+
+if (i18n.isInitialized) {
+  renderApp();
+} else {
+  i18n.on('initialized', renderApp);
+}
