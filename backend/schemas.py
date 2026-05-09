@@ -16,6 +16,7 @@ class Lesson(LessonBase):
     id: int
     created_at: datetime
     is_favorite: Optional[bool] = False
+    views_count: int = 0
 
     class Config:
         from_attributes = True

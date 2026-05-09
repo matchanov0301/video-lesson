@@ -22,6 +22,7 @@ class Lesson(Base):
     link = Column(String)
     category_id = Column(Integer, ForeignKey("categories.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
+    views_count = Column(Integer, default=0)
 
     category = relationship("Category", back_populates="lessons")
 
@@ -37,3 +38,12 @@ class Admin(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     telegram_id = Column(BigInteger, unique=True, index=True)
+
+class LessonView(Base):
+    __tablename__ = "lesson_views"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(BigInteger, index=True)
+    lesson_id = Column(Integer, ForeignKey("lessons.id"))
+    viewed_at = Column(DateTime, default=datetime.utcnow)
+

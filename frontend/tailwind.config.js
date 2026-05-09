@@ -8,14 +8,17 @@ export default {
     extend: {
       colors: {
         tg: {
-          bg: 'var(--tg-theme-bg-color)',
-          text: 'var(--tg-theme-text-color)',
-          hint: 'var(--tg-theme-hint-color)',
-          link: 'var(--tg-theme-link-color)',
-          button: 'var(--tg-theme-button-color)',
-          buttonText: 'var(--tg-theme-button-text-color)',
-          secondaryBg: 'var(--tg-theme-secondary-bg-color)',
-        }
+          bg: 'var(--color-bg)',
+          text: 'var(--color-text)',
+          hint: 'var(--color-muted)',
+          link: 'var(--color-gold)',
+          button: 'var(--color-gold)',
+          buttonText: 'var(--color-bg)',
+          secondaryBg: 'var(--color-card)',
+        },
+        gold: 'var(--color-gold)',
+        card: 'var(--color-card)',
+        muted: 'var(--color-muted)'
       }
     },
   },

@@ -3,6 +3,7 @@ import MainScreen from './pages/MainScreen';
 import CategoriesScreen from './pages/CategoriesScreen';
 import CategoryScreen from './pages/CategoryScreen';
 import FavoritesScreen from './pages/FavoritesScreen';
+import TopScreen from './pages/TopScreen';
 import AdminPanel from './pages/AdminPanel';
 import BottomNav from './components/BottomNav';
 import WebApp from '@twa-dev/sdk';
@@ -62,6 +63,7 @@ function App() {
         <Routes>
           <Route path="/" element={<MainScreen isAdmin={isAdmin} />} />
           <Route path="/categories" element={<CategoriesScreen />} />
+          <Route path="/top" element={<TopScreen />} />
           <Route path="/favorites" element={<FavoritesScreen />} />
           <Route path="/category/:id" element={<CategoryScreen />} />
           {isAdmin && <Route path="/admin" element={<AdminPanel />} />}

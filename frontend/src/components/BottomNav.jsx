@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, BookOpen, Heart } from 'lucide-react';
+import { Home, BookOpen, Heart, Trophy } from 'lucide-react';
 
 export default function BottomNav() {
   const location = useLocation();
@@ -7,22 +7,26 @@ export default function BottomNav() {
   const tabs = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Categories', path: '/categories', icon: BookOpen },
+    { name: 'Top', path: '/top', icon: Trophy },
     { name: 'Favorites', path: '/favorites', icon: Heart },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-tg-bg border-t border-tg-hint/20 pb-safe z-50">
-      <div className="flex justify-around items-center h-16">
+    <div className="fixed bottom-4 left-4 right-4 z-50">
+      <div className="flex justify-around items-center h-16 bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = location.pathname === tab.path;
+          const isActive = location.pathname === tab.path || (tab.path === '/categories' && location.pathname.startsWith('/category/'));
           return (
             <Link 
               key={tab.name} 
               to={tab.path} 
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${isActive ? 'text-tg-button' : 'text-tg-hint hover:text-tg-text'}`}
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 relative transition-colors ${isActive ? 'text-gold' : 'text-muted hover:text-white'}`}
             >
-              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+              {isActive && (
+                <div className="absolute top-0 w-8 h-1 bg-gold rounded-b-full shadow-[0_0_10px_rgba(197,163,89,0.5)]"></div>
+              )}
+              <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               <span className="text-[10px] font-medium">{tab.name}</span>
             </Link>
           );

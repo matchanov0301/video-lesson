@@ -17,19 +17,24 @@ from .bot import bot, dp
 
 models.Base.metadata.create_all(bind=engine)
 
-def ensure_bigint_columns_for_postgres():
-    """Prevent Telegram ID overflows on PostgreSQL integer columns."""
-    if engine.dialect.name != "postgresql":
-        return
+def run_migrations():
+    """Run lightweight migrations."""
     try:
         with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE favorites ALTER COLUMN user_id TYPE BIGINT"))
-            conn.execute(text("ALTER TABLE admins ALTER COLUMN telegram_id TYPE BIGINT"))
+            conn.execute(text("ALTER TABLE lessons ADD COLUMN views_count INTEGER DEFAULT 0"))
     except Exception:
-        # Keep startup resilient; create_all already handled table creation.
         pass
+        
+    if engine.dialect.name == "postgresql":
+        try:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE favorites ALTER COLUMN user_id TYPE BIGINT"))
+                conn.execute(text("ALTER TABLE admins ALTER COLUMN telegram_id TYPE BIGINT"))
+                conn.execute(text("ALTER TABLE lesson_views ALTER COLUMN user_id TYPE BIGINT"))
+        except Exception:
+            pass
 
-ensure_bigint_columns_for_postgres()
+run_migrations()
 
 app = FastAPI(title="Video Lessons API")
 
@@ -142,6 +147,43 @@ def delete_lesson(lesson_id: int, db: Session = Depends(database.get_db), user: 
     db.delete(lesson)
     db.commit()
     return {"ok": True}
+
+@app.get("/lessons/top", response_model=List[schemas.Lesson])
+def get_top_lessons(limit: int = 10, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    # Use order_by desc
+    lessons = db.query(models.Lesson).order_by(models.Lesson.views_count.desc()).limit(limit).all()
+    
+    favs = db.query(models.Favorite).filter(models.Favorite.user_id == user["id"]).all()
+    fav_ids = {f.lesson_id for f in favs}
+    for l in lessons:
+        l.is_favorite = l.id in fav_ids
+    return lessons
+
+@app.post("/lessons/{lesson_id}/view")
+def increment_lesson_view(lesson_id: int, db: Session = Depends(database.get_db), user: dict = Depends(auth.get_current_user)):
+    user_id = user["id"]
+    
+    view = db.query(models.LessonView).filter(
+        models.LessonView.lesson_id == lesson_id, 
+        models.LessonView.user_id == user_id
+    ).first()
+    
+    lesson = db.query(models.Lesson).filter(models.Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+        
+    if not view:
+        new_view = models.LessonView(lesson_id=lesson_id, user_id=user_id)
+        db.add(new_view)
+        
+        if lesson.views_count is None:
+            lesson.views_count = 0
+        lesson.views_count += 1
+        
+        db.commit()
+        
+    return {"ok": True, "views_count": lesson.views_count}
+
 
 # Favorites
 @app.get("/favorites", response_model=List[schemas.Lesson])
