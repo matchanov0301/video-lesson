@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function MainScreen({ isAdmin }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [lessons, setLessons] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export default function MainScreen({ isAdmin }) {
     <div className="p-4 animate-in fade-in duration-300 pb-24">
       <div className="sticky top-0 bg-[#111111]/90 backdrop-blur-md z-10 -mx-4 px-4 pt-4 pb-2 border-b border-gold/10 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('home')}</h1>
+          <h1 className="text-xl font-bold text-tg-text tracking-wide break-words">{t('home')} (Lang: {i18n.language}, Res: {i18n.options.resources['uz-latn'] ? Object.keys(i18n.options.resources['uz-latn'].translation).length : 'None'})</h1>
           <div className="flex items-center space-x-2">
             <LanguageSwitcher />
             {isAdmin && (
