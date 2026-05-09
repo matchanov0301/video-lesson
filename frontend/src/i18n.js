@@ -21,8 +21,13 @@ try {
   // ignore
 }
 
-// Manually manage language detection to avoid i18next plugin bugs causing "search_placeholder" raw keys
-const savedLang = localStorage.getItem('i18nextLng');
+// Safely access localStorage to prevent Telegram WebApp SecurityErrors
+let savedLang = null;
+try {
+  savedLang = localStorage.getItem('i18nextLng');
+} catch (e) {
+  console.warn("localStorage not available:", e);
+}
 const initialLang = (savedLang === 'uz-latn' || savedLang === 'uz-cyrl') ? savedLang : defaultLang;
 
 i18n
@@ -41,7 +46,11 @@ i18n
 // Save to localStorage when language changes via LanguageSwitcher
 i18n.on('languageChanged', (lng) => {
   if (lng === 'uz-latn' || lng === 'uz-cyrl') {
-    localStorage.setItem('i18nextLng', lng);
+    try {
+      localStorage.setItem('i18nextLng', lng);
+    } catch (e) {
+      console.warn("Could not save language to localStorage:", e);
+    }
   }
 });
 
