@@ -1,14 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Heart, Trophy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function BottomNav() {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const tabs = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Categories', path: '/categories', icon: BookOpen },
-    { name: 'Top', path: '/top', icon: Trophy },
-    { name: 'Favorites', path: '/favorites', icon: Heart },
+    { name: t('Home'), path: '/', icon: Home },
+    { name: t('Categories'), path: '/categories', icon: BookOpen },
+    { name: t('Top'), path: '/top', icon: Trophy },
+    { name: t('Favorites'), path: '/favorites', icon: Heart },
   ];
 
   return (

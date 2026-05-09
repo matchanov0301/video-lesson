@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import WebApp from '@twa-dev/sdk';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function AdminPanel() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [lessons, setLessons] = useState([]);
@@ -47,20 +50,20 @@ export default function AdminPanel() {
       await api.post('/categories', { name: newCatName });
       setNewCatName("");
       fetchData();
-      WebApp.showAlert("Category added!");
+      WebApp.showAlert(t("Category added!"));
     } catch (error) {
-      WebApp.showAlert("Error adding category.");
+      WebApp.showAlert(t("Error adding category."));
     }
   };
 
   const deleteCategory = async (id) => {
-    WebApp.showConfirm("Are you sure you want to delete this category?", async (confirmed) => {
+    WebApp.showConfirm(t("Are you sure you want to delete this category?"), async (confirmed) => {
       if (confirmed) {
         try {
           await api.delete(`/categories/${id}`);
           fetchData();
         } catch (error) {
-          WebApp.showAlert("Error deleting category.");
+          WebApp.showAlert(t("Error deleting category."));
         }
       }
     });
@@ -69,37 +72,37 @@ export default function AdminPanel() {
   const addLesson = async (e) => {
     e.preventDefault();
     if (!newLesson.topic || !newLesson.link || !newLesson.category_id) {
-      WebApp.showAlert("Please fill required fields (Topic, Link, Category).");
+      WebApp.showAlert(t("Please fill required fields (Topic, Link, Category)."));
       return;
     }
     if (!newLesson.link.startsWith("https://t.me/")) {
-      WebApp.showAlert("Link must start with https://t.me/");
+      WebApp.showAlert(t("Link must start with https://t.me/"));
       return;
     }
     
     try {
       await api.post('/lessons', newLesson);
       setNewLesson({ topic: "", speaker: "", duration: "", link: "", category_id: "" });
-      WebApp.showAlert("Lesson added successfully!");
+      WebApp.showAlert(t("Lesson added successfully!"));
     } catch (error) {
-      WebApp.showAlert("Error adding lesson.");
+      WebApp.showAlert(t("Error adding lesson."));
     }
   };
 
   const importFromSheets = async (e) => {
     e.preventDefault();
     if (!sheetId) {
-      WebApp.showAlert("Please enter a Google Sheet ID.");
+      WebApp.showAlert(t("Google Sheet ID (e.g. 10ByL...)"));
       return;
     }
     setIsImporting(true);
     try {
       const res = await api.post('/import/sheets', { sheet_id: sheetId });
-      WebApp.showAlert(`Import successful! ${res.data.imported} lessons imported.`);
+      WebApp.showAlert(t("Import successful! {{count}} lessons imported.", { count: res.data.imported }));
       setSheetId("");
       fetchData(); // Refresh categories
     } catch (error) {
-      WebApp.showAlert("Error importing from Google Sheets.");
+      WebApp.showAlert(t("Error importing from Google Sheets."));
       console.error(error);
     } finally {
       setIsImporting(false);
@@ -108,17 +111,20 @@ export default function AdminPanel() {
 
   return (
     <div className="p-4 space-y-8 animate-in slide-in-from-right-4 duration-300">
-      <h1 className="text-2xl font-bold text-tg-text">Admin Panel</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-tg-text">{t('Admin Panel')}</h1>
+        <LanguageSwitcher />
+      </div>
       
       {/* Categories Management */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">Categories</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('Categories')}</h2>
         <form onSubmit={addCategory} className="flex gap-2 mb-4">
           <input 
             type="text" 
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
-            placeholder="New Category Name" 
+            placeholder={t('New Category Name')}
             className="flex-1 bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           <button type="submit" className="bg-tg-button text-tg-buttonText px-4 py-2 rounded-lg font-medium flex items-center">
@@ -140,31 +146,31 @@ export default function AdminPanel() {
 
       {/* Google Sheets Import */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">Import from Google Sheets</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('Import from Google Sheets')}</h2>
         <form onSubmit={importFromSheets} className="space-y-3">
           <input 
             type="text" 
             value={sheetId}
             onChange={(e) => setSheetId(e.target.value)}
-            placeholder="Google Sheet ID (e.g. 10ByL...)" 
+            placeholder={t("Google Sheet ID (e.g. 10ByL...)")}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           <button type="submit" disabled={isImporting} className="w-full bg-tg-button text-tg-buttonText py-2.5 rounded-lg font-medium opacity-100 disabled:opacity-50">
-            {isImporting ? "Importing..." : "Start Import"}
+            {isImporting ? t("Importing...") : t("Start Import")}
           </button>
         </form>
       </div>
 
       {/* Lessons Management */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">Add Manual Lesson</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('Add Manual Lesson')}</h2>
         <form onSubmit={addLesson} className="space-y-3">
           <select 
             value={newLesson.category_id}
             onChange={(e) => setNewLesson({...newLesson, category_id: e.target.value})}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           >
-            <option value="">Select Category</option>
+            <option value="">{t('Select Category')}</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
@@ -174,7 +180,7 @@ export default function AdminPanel() {
             type="text" 
             value={newLesson.topic}
             onChange={(e) => setNewLesson({...newLesson, topic: e.target.value})}
-            placeholder="Topic (Required)" 
+            placeholder={t('Topic (Required)')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
 
@@ -182,7 +188,7 @@ export default function AdminPanel() {
             type="text" 
             value={newLesson.speaker}
             onChange={(e) => setNewLesson({...newLesson, speaker: e.target.value})}
-            placeholder="Speaker (Optional)" 
+            placeholder={t('Speaker (Optional)')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
 
@@ -190,7 +196,7 @@ export default function AdminPanel() {
             type="text" 
             value={newLesson.duration}
             onChange={(e) => setNewLesson({...newLesson, duration: e.target.value})}
-            placeholder="Duration (e.g. 15:30) (Optional)" 
+            placeholder={t('Duration (e.g. 15:30) (Optional)')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           
@@ -198,12 +204,12 @@ export default function AdminPanel() {
             type="url" 
             value={newLesson.link}
             onChange={(e) => setNewLesson({...newLesson, link: e.target.value})}
-            placeholder="https://t.me/c/... (Required)" 
+            placeholder={t('https://t.me/c/... (Required)')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           
           <button type="submit" className="w-full bg-tg-button text-tg-buttonText py-2.5 rounded-lg font-medium">
-            Add Lesson
+            {t('Add Lesson')}
           </button>
         </form>
       </div>

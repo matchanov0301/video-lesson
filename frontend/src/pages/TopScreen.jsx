@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Heart, Clock, User, Eye, Trophy } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function TopScreen() {
+  const { t } = useTranslation();
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,15 +53,16 @@ export default function TopScreen() {
     <div className="p-4 animate-in fade-in duration-300 pb-24">
       <div className="flex items-center mb-6 sticky top-0 bg-[#111111]/90 backdrop-blur-md z-10 py-3 -mx-4 px-4 border-b border-gold/10">
         <Trophy className="text-gold mr-3" size={24} />
-        <h1 className="text-2xl font-bold text-tg-text tracking-wide">Top Viewed</h1>
+        <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('Top Viewed')}</h1>
+        <LanguageSwitcher />
       </div>
 
       {loading ? (
-        <div className="text-center py-10 text-muted">Loading top lessons...</div>
+        <div className="text-center py-10 text-muted">{t('Loading top lessons...')}</div>
       ) : lessons.length === 0 ? (
         <div className="text-center py-10 text-muted">
           <Trophy size={48} className="mx-auto mb-4 opacity-30 text-gold" />
-          <p>No top lessons yet.</p>
+          <p>{t('No top lessons yet.')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -98,7 +102,7 @@ export default function TopScreen() {
                 )}
                 <div className="flex items-center text-gold/80 ml-auto font-medium">
                   <Eye size={14} className="mr-1" />
-                  {lesson.views_count || 0}
+                  {lesson.views_count || 0} {t('views')}
                 </div>
               </div>
             </div>

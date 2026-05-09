@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Search, Heart, Clock, User, Eye, Settings } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function MainScreen({ isAdmin }) {
+  const { t } = useTranslation();
   const [lessons, setLessons] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -62,15 +65,18 @@ export default function MainScreen({ isAdmin }) {
     <div className="p-4 animate-in fade-in duration-300 pb-24">
       <div className="sticky top-0 bg-[#111111]/90 backdrop-blur-md z-10 -mx-4 px-4 pt-4 pb-2 border-b border-gold/10 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-tg-text tracking-wide">Home</h1>
-          {isAdmin && (
-            <button 
-              onClick={() => navigate('/admin')}
-              className="p-2 rounded-full bg-card text-gold hover:opacity-80 transition-opacity border border-gold/20 shadow-[0_0_15px_rgba(197,163,89,0.15)]"
-            >
-              <Settings size={20} />
-            </button>
-          )}
+          <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('Home')}</h1>
+          <div className="flex items-center space-x-2">
+            <LanguageSwitcher />
+            {isAdmin && (
+              <button 
+                onClick={() => navigate('/admin')}
+                className="p-2 rounded-full bg-card text-gold hover:opacity-80 transition-opacity border border-gold/20 shadow-[0_0_15px_rgba(197,163,89,0.15)] ml-1"
+              >
+                <Settings size={20} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="relative">
@@ -81,18 +87,18 @@ export default function MainScreen({ isAdmin }) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by topic, speaker, or category..."
+            placeholder={t('Search by topic, speaker, or category...')}
             className="w-full bg-[#161616] border border-gold/20 text-tg-text rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold transition-all placeholder:text-muted/70 shadow-inner"
           />
         </div>
       </div>
 
       {loading && lessons.length === 0 ? (
-        <div className="text-center py-10 text-tg-hint">Searching...</div>
+        <div className="text-center py-10 text-tg-hint">{t('Searching...')}</div>
       ) : lessons.length === 0 ? (
         <div className="text-center py-10 text-tg-hint">
           <Search size={48} className="mx-auto mb-4 opacity-50" />
-          <p>No lessons found.</p>
+          <p>{t('No lessons found.')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -128,7 +134,7 @@ export default function MainScreen({ isAdmin }) {
                 )}
                 <div className="flex items-center text-gold/80 ml-auto font-medium">
                   <Eye size={14} className="mr-1" />
-                  {lesson.views_count || 0} views
+                  {lesson.views_count || 0} {t('views')}
                 </div>
               </div>
             </div>

@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { BookOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function CategoriesScreen() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -23,20 +26,21 @@ export default function CategoriesScreen() {
   }, []);
 
   if (loading) {
-    return <div className="p-4 text-center text-muted">Loading categories...</div>;
+    return <div className="p-4 text-center text-muted">{t('Loading categories...')}</div>;
   }
 
   return (
     <div className="p-4 animate-in fade-in duration-300 pb-24">
       <div className="flex items-center mb-6 sticky top-0 bg-[#111111]/90 backdrop-blur-md z-10 py-3 -mx-4 px-4 border-b border-gold/10">
         <BookOpen className="text-gold mr-3" size={24} />
-        <h1 className="text-2xl font-bold text-tg-text tracking-wide">Categories</h1>
+        <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('Categories')}</h1>
+        <LanguageSwitcher />
       </div>
 
       {categories.length === 0 ? (
         <div className="text-center py-10 text-muted">
           <BookOpen size={48} className="mx-auto mb-4 opacity-30 text-gold" />
-          <p>No categories available yet.</p>
+          <p>{t('No categories available yet.')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
