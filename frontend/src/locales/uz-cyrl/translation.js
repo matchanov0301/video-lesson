@@ -1,4 +1,4 @@
-{
+export default {
   "home": "Асосий",
   "categories": "Категориялар",
   "top": "Топ",

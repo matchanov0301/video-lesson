@@ -2,13 +2,13 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import WebApp from '@twa-dev/sdk';
 
-import uzLatn from './locales/uz-latn/translation.json';
-import uzCyrl from './locales/uz-cyrl/translation.json';
+import uzLatn from './locales/uz-latn/translation.js';
+import uzCyrl from './locales/uz-cyrl/translation.js';
 
-// Safely handle Vite's JSON import (sometimes it has a .default wrapper, sometimes it doesn't depending on the bundler)
+// Since we are importing pure JS objects, no default wrapper check is needed
 const resources = {
-  'uz-latn': { translation: uzLatn.default || uzLatn },
-  'uz-cyrl': { translation: uzCyrl.default || uzCyrl }
+  'uz-latn': { translation: uzLatn },
+  'uz-cyrl': { translation: uzCyrl }
 };
 
 // Intercept WebApp language code
@@ -37,6 +37,8 @@ i18n
     lng: initialLang, // Force exact language
     fallbackLng: 'uz-latn', // Strict fallback to our primary locale
     supportedLngs: ['uz-latn', 'uz-cyrl'], // Disallow any other languages like "ru" or "en"
+    defaultNS: 'translation',
+    ns: ['translation'],
     debug: true,
     interpolation: {
       escapeValue: false 

@@ -1,4 +1,4 @@
-{
+export default {
   "home": "Asosiy",
   "categories": "Kategoriyalar",
   "top": "Top",
