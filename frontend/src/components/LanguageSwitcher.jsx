@@ -4,13 +4,12 @@ export default function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
   const toggleLanguage = () => {
-    // If the language string contains uz-cyrl (like uz-cyrl-UZ) we check it
-    const isCyrillic = i18n.language && i18n.language.includes('uz-cyrl');
-    const nextLang = isCyrillic ? 'uz-latn' : 'uz-cyrl';
+    const isCyrillic = i18n.language && i18n.language.includes('cyrl');
+    const nextLang = isCyrillic ? 'latn' : 'cyrl';
     i18n.changeLanguage(nextLang);
   };
 
-  const isCyrillic = i18n.language && i18n.language.includes('uz-cyrl');
+  const isCyrillic = i18n.language && i18n.language.includes('cyrl');
 
   return (
     <button 

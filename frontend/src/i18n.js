@@ -96,15 +96,16 @@ const uzCyrl = {
 };
 
 const resources = {
-  'uz-latn': { translation: uzLatn },
-  'uz-cyrl': { translation: uzCyrl }
+  'latn': { translation: uzLatn },
+  'cyrl': { translation: uzCyrl }
 };
 
 // Intercept WebApp language code
-let defaultLang = 'uz-latn';
+let defaultLang = 'latn';
 try {
-  if (WebApp.initDataUnsafe?.user?.language_code === 'uz-cyrl') {
-    defaultLang = 'uz-cyrl';
+  if (WebApp.initDataUnsafe?.user?.language_code === 'uz-cyrl' || WebApp.initDataUnsafe?.user?.language_code === 'uz') {
+    // If we want cyrillic by default for 'uz' we could, but let's default to latn
+    defaultLang = 'latn';
   }
 } catch (e) {
   // ignore
@@ -117,17 +118,19 @@ try {
 } catch (e) {
   console.warn("localStorage not available:", e);
 }
-const initialLang = (savedLang === 'uz-latn' || savedLang === 'uz-cyrl') ? savedLang : defaultLang;
+const initialLang = (savedLang === 'latn' || savedLang === 'cyrl') ? savedLang : defaultLang;
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
     lng: initialLang, // Force exact language
-    fallbackLng: 'uz-latn', // Strict fallback to our primary locale
-    supportedLngs: ['uz-latn', 'uz-cyrl'], // Disallow any other languages like "ru" or "en"
+    fallbackLng: 'latn', // Strict fallback to our primary locale
+    supportedLngs: ['latn', 'cyrl'], 
     defaultNS: 'translation',
     ns: ['translation'],
+    lowerCaseLng: true, // Force lowercase to avoid uz-Latn bugs
+    cleanCode: true,
     debug: true,
     interpolation: {
       escapeValue: false 
@@ -136,7 +139,7 @@ i18n
 
 // Save to localStorage when language changes via LanguageSwitcher
 i18n.on('languageChanged', (lng) => {
-  if (lng === 'uz-latn' || lng === 'uz-cyrl') {
+  if (lng === 'latn' || lng === 'cyrl') {
     try {
       localStorage.setItem('i18nextLng', lng);
     } catch (e) {
