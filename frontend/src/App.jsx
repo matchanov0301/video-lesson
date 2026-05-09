@@ -29,7 +29,7 @@ function App() {
         setLoading(false);
       } catch (err) {
         console.error("Auth error", err);
-        setError(err.response?.data?.detail || t("Authentication failed. Make sure you are in the private group."));
+        setError(err.response?.data?.detail || t('auth_failed'));
         setLoading(false);
       }
     };
@@ -53,7 +53,7 @@ function App() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h1 className="text-xl font-bold mb-2">{t('Access Denied')}</h1>
+        <h1 className="text-xl font-bold mb-2">{t('access_denied')}</h1>
         <p className="text-tg-hint">{error}</p>
       </div>
     );

@@ -26,21 +26,21 @@ export default function CategoriesScreen() {
   }, []);
 
   if (loading) {
-    return <div className="p-4 text-center text-muted">{t('Loading categories...')}</div>;
+    return <div className="p-4 text-center text-muted">{t('loading_categories')}</div>;
   }
 
   return (
     <div className="p-4 animate-in fade-in duration-300 pb-24">
       <div className="flex items-center mb-6 sticky top-0 bg-[#111111]/90 backdrop-blur-md z-10 py-3 -mx-4 px-4 border-b border-gold/10">
         <BookOpen className="text-gold mr-3" size={24} />
-        <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('Categories')}</h1>
+        <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('categories')}</h1>
         <LanguageSwitcher />
       </div>
 
       {categories.length === 0 ? (
         <div className="text-center py-10 text-muted">
           <BookOpen size={48} className="mx-auto mb-4 opacity-30 text-gold" />
-          <p>{t('No categories available yet.')}</p>
+          <p>{t('no_categories_yet')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">

@@ -50,20 +50,20 @@ export default function AdminPanel() {
       await api.post('/categories', { name: newCatName });
       setNewCatName("");
       fetchData();
-      WebApp.showAlert(t("Category added!"));
+      WebApp.showAlert(t('category_added'));
     } catch (error) {
-      WebApp.showAlert(t("Error adding category."));
+      WebApp.showAlert(t('error_adding_category'));
     }
   };
 
   const deleteCategory = async (id) => {
-    WebApp.showConfirm(t("Are you sure you want to delete this category?"), async (confirmed) => {
+    WebApp.showConfirm(t('delete_category_confirm'), async (confirmed) => {
       if (confirmed) {
         try {
           await api.delete(`/categories/${id}`);
           fetchData();
         } catch (error) {
-          WebApp.showAlert(t("Error deleting category."));
+          WebApp.showAlert(t('error_deleting_category'));
         }
       }
     });
@@ -72,37 +72,37 @@ export default function AdminPanel() {
   const addLesson = async (e) => {
     e.preventDefault();
     if (!newLesson.topic || !newLesson.link || !newLesson.category_id) {
-      WebApp.showAlert(t("Please fill required fields (Topic, Link, Category)."));
+      WebApp.showAlert(t('fill_required_fields'));
       return;
     }
     if (!newLesson.link.startsWith("https://t.me/")) {
-      WebApp.showAlert(t("Link must start with https://t.me/"));
+      WebApp.showAlert(t('link_must_start_with'));
       return;
     }
     
     try {
       await api.post('/lessons', newLesson);
       setNewLesson({ topic: "", speaker: "", duration: "", link: "", category_id: "" });
-      WebApp.showAlert(t("Lesson added successfully!"));
+      WebApp.showAlert(t('lesson_added_successfully'));
     } catch (error) {
-      WebApp.showAlert(t("Error adding lesson."));
+      WebApp.showAlert(t('error_adding_lesson'));
     }
   };
 
   const importFromSheets = async (e) => {
     e.preventDefault();
     if (!sheetId) {
-      WebApp.showAlert(t("Google Sheet ID (e.g. 10ByL...)"));
+      WebApp.showAlert(t('google_sheet_id'));
       return;
     }
     setIsImporting(true);
     try {
       const res = await api.post('/import/sheets', { sheet_id: sheetId });
-      WebApp.showAlert(t("Import successful! {{count}} lessons imported.", { count: res.data.imported }));
+      WebApp.showAlert(t('import_successful', { count: res.data.imported }));
       setSheetId("");
       fetchData(); // Refresh categories
     } catch (error) {
-      WebApp.showAlert(t("Error importing from Google Sheets."));
+      WebApp.showAlert(t('error_importing'));
       console.error(error);
     } finally {
       setIsImporting(false);
@@ -112,19 +112,19 @@ export default function AdminPanel() {
   return (
     <div className="p-4 space-y-8 animate-in slide-in-from-right-4 duration-300">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-tg-text">{t('Admin Panel')}</h1>
+        <h1 className="text-2xl font-bold text-tg-text">{t('admin_panel')}</h1>
         <LanguageSwitcher />
       </div>
       
       {/* Categories Management */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('Categories')}</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('categories')}</h2>
         <form onSubmit={addCategory} className="flex gap-2 mb-4">
           <input 
             type="text" 
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
-            placeholder={t('New Category Name')}
+            placeholder={t('new_category_name')}
             className="flex-1 bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           <button type="submit" className="bg-tg-button text-tg-buttonText px-4 py-2 rounded-lg font-medium flex items-center">
@@ -146,31 +146,31 @@ export default function AdminPanel() {
 
       {/* Google Sheets Import */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('Import from Google Sheets')}</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('import_google_sheets')}</h2>
         <form onSubmit={importFromSheets} className="space-y-3">
           <input 
             type="text" 
             value={sheetId}
             onChange={(e) => setSheetId(e.target.value)}
-            placeholder={t("Google Sheet ID (e.g. 10ByL...)")}
+            placeholder={t('google_sheet_id')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           <button type="submit" disabled={isImporting} className="w-full bg-tg-button text-tg-buttonText py-2.5 rounded-lg font-medium opacity-100 disabled:opacity-50">
-            {isImporting ? t("Importing...") : t("Start Import")}
+            {isImporting ? t('importing') : t('start_import')}
           </button>
         </form>
       </div>
 
       {/* Lessons Management */}
       <div className="bg-tg-secondaryBg p-4 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('Add Manual Lesson')}</h2>
+        <h2 className="text-xl font-semibold mb-4 text-tg-text">{t('add_manual_lesson')}</h2>
         <form onSubmit={addLesson} className="space-y-3">
           <select 
             value={newLesson.category_id}
             onChange={(e) => setNewLesson({...newLesson, category_id: e.target.value})}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           >
-            <option value="">{t('Select Category')}</option>
+            <option value="">{t('select_category')}</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
@@ -180,7 +180,7 @@ export default function AdminPanel() {
             type="text" 
             value={newLesson.topic}
             onChange={(e) => setNewLesson({...newLesson, topic: e.target.value})}
-            placeholder={t('Topic (Required)')}
+            placeholder={t('topic_required')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
 
@@ -188,7 +188,7 @@ export default function AdminPanel() {
             type="text" 
             value={newLesson.speaker}
             onChange={(e) => setNewLesson({...newLesson, speaker: e.target.value})}
-            placeholder={t('Speaker (Optional)')}
+            placeholder={t('speaker_optional')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
 
@@ -196,7 +196,7 @@ export default function AdminPanel() {
             type="text" 
             value={newLesson.duration}
             onChange={(e) => setNewLesson({...newLesson, duration: e.target.value})}
-            placeholder={t('Duration (e.g. 15:30) (Optional)')}
+            placeholder={t('duration_optional')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           
@@ -204,12 +204,12 @@ export default function AdminPanel() {
             type="url" 
             value={newLesson.link}
             onChange={(e) => setNewLesson({...newLesson, link: e.target.value})}
-            placeholder={t('https://t.me/c/... (Required)')}
+            placeholder={t('link_required')}
             className="w-full bg-[var(--tg-theme-bg-color)] border border-tg-hint/30 rounded-lg px-3 py-2 text-tg-text focus:outline-none focus:border-tg-button"
           />
           
           <button type="submit" className="w-full bg-tg-button text-tg-buttonText py-2.5 rounded-lg font-medium">
-            {t('Add Lesson')}
+            {t('add_lesson')}
           </button>
         </form>
       </div>

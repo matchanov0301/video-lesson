@@ -7,10 +7,10 @@ export default function BottomNav() {
   const { t } = useTranslation();
 
   const tabs = [
-    { name: t('Home'), path: '/', icon: Home },
-    { name: t('Categories'), path: '/categories', icon: BookOpen },
-    { name: t('Top'), path: '/top', icon: Trophy },
-    { name: t('Favorites'), path: '/favorites', icon: Heart },
+    { name: t('home'), path: '/', icon: Home },
+    { name: t('categories'), path: '/categories', icon: BookOpen },
+    { name: t('top'), path: '/top', icon: Trophy },
+    { name: t('favorites'), path: '/favorites', icon: Heart },
   ];
 
   return (

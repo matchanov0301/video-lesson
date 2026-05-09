@@ -65,7 +65,7 @@ export default function MainScreen({ isAdmin }) {
     <div className="p-4 animate-in fade-in duration-300 pb-24">
       <div className="sticky top-0 bg-[#111111]/90 backdrop-blur-md z-10 -mx-4 px-4 pt-4 pb-2 border-b border-gold/10 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('Home')}</h1>
+          <h1 className="text-2xl font-bold text-tg-text tracking-wide">{t('home')}</h1>
           <div className="flex items-center space-x-2">
             <LanguageSwitcher />
             {isAdmin && (
@@ -87,18 +87,18 @@ export default function MainScreen({ isAdmin }) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('Search by topic, speaker, or category...')}
+            placeholder={t('search_placeholder')}
             className="w-full bg-[#161616] border border-gold/20 text-tg-text rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold transition-all placeholder:text-muted/70 shadow-inner"
           />
         </div>
       </div>
 
       {loading && lessons.length === 0 ? (
-        <div className="text-center py-10 text-tg-hint">{t('Searching...')}</div>
+        <div className="text-center py-10 text-tg-hint">{t('searching')}</div>
       ) : lessons.length === 0 ? (
         <div className="text-center py-10 text-tg-hint">
           <Search size={48} className="mx-auto mb-4 opacity-50" />
-          <p>{t('No lessons found.')}</p>
+          <p>{t('no_lessons_found')}</p>
         </div>
       ) : (
         <div className="space-y-4">
